@@ -19,7 +19,7 @@
 ## Usage
 
 - The survey opt-in will automatically appear on the order confirmation page.
-- To display the Google Customer Review Badge, include `{hook h="displayGCRbage"}` in your template.
+- To display the Google Customer Review Badge, include `{hook h="displayGCRbadge"}` in your template.
 
 ## Disclaimer
 

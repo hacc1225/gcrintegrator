@@ -26,12 +26,14 @@ class GCRintegrator extends Module
     public function install()
     {
         return parent::install() &&
-        $this->registerHook('displayHeader') &&
+        $this->registerHook('displayBeforeBodyClosingTag') &&
         $this->registerHook('displayOrderConfirmation') &&
-        $this->registerHook('displayGCRbage') &&
+        $this->registerHook('displayGCRbadge') &&
         Configuration::updateValue('gcrintegrator_merchant_id', '') &&
         Configuration::updateValue('gcrintegrator_EstimatedDeliveryDays', 0) &&
         Configuration::updateValue('gcrintegrator_OPT_IN_STYLE', 'CENTER_DIALOG') &&
+        Configuration::updateValue('gcrintegrator_badgeVisibleGlobally', '') &&
+        Configuration::updateValue('gcrintegrator_globalBadgePosition', 'BOTTOM_RIGHT') &&
         Configuration::updateValue('gcrintegrator_GtinProvided', '') &&
         Configuration::updateValue('gcrintegrator_GtinDataSource', 0);
     }
@@ -41,14 +43,11 @@ class GCRintegrator extends Module
         Configuration::deleteByName('gcrintegrator_merchant_id');
         Configuration::deleteByName('gcrintegrator_EstimatedDeliveryDays');
         Configuration::deleteByName('gcrintegrator_OPT_IN_STYLE');
+        Configuration::deleteByName('gcrintegrator_badgeVisibleGlobally');
+        Configuration::deleteByName('gcrintegrator_globalBadgePosition');
         Configuration::deleteByName('gcrintegrator_GtinProvided');
         Configuration::deleteByName('gcrintegrator_GtinDataSource');
         return parent::uninstall();
-    }
-
-    public function hookDisplayHeader($params)
-    {
-        return $this->context->smarty->fetch($this->local_path.'views/templates/hook/header.tpl');
     }
 
     public function getContent()
@@ -71,6 +70,12 @@ class GCRintegrator extends Module
 
     public function displayForm()
     {
+        $badgeVisibleGlobally = array(
+            array(
+                'id_option' => 'badgeVisibleGlobally',
+                'name' => $this->l('GCR Badge Visible Globally')
+            ),
+        );
         $gtinProvided = array(
             array(
                 'id_option' => 'GtinProvided',
@@ -142,7 +147,18 @@ class GCRintegrator extends Module
                             'id' => 'id_option',
                             'name' => 'name'
                         )
-                    )
+                    ),
+                    array(
+                        'type' => 'checkbox',
+                        'name' => 'gcrintegrator',
+                        'desc'    => $this->l('Display a badge globally, in addition to any inline badges embedded with shortcodes.'),
+                        'class' => 't',
+                        'values' => array(
+                            'query' => $badgeVisibleGlobally,
+                            'id' => 'id_option',
+                            'name' => 'name'
+                        ),
+                    ),
                 ),
                 'submit' => array(
                     'title' => $this->l('Save')
@@ -197,6 +213,36 @@ class GCRintegrator extends Module
             $helper->fields_value['gcrintegrator_GtinDataSource'] = Configuration::get('gcrintegrator_GtinDataSource');
         }
 
+        $isBadgeVisibleGlobally = Configuration::get('gcrintegrator_badgeVisibleGlobally');
+        $helper->fields_value['gcrintegrator_badgeVisibleGlobally'] = $isBadgeVisibleGlobally;
+
+        if ($isBadgeVisibleGlobally == 'on') {
+            $globalBadgePositionOption = array(
+                array(
+                    'id_option' => 'BOTTOM_RIGHT',
+                    'name' => 'Bottom Right'
+                ),
+                array(
+                    'id_option' => 'BOTTOM_LEFT',
+                    'name' => 'Bottom Left'
+                ),
+            );
+            $globalBadgePosition = array(
+                'type' => 'select',
+                'label' => $this->l('Position for Global-Display Badges Only'),
+                'desc' => $this->l('Choose the position for globally displayed badges only, without affecting inline badges.'),
+                'name' => 'gcrintegrator_globalBadgePosition',
+                'options' => array(
+                    'query' => $globalBadgePositionOption,
+                    'id' => 'id_option',
+                    'name' => 'name'
+                )
+            );
+
+            $fields_form['form']['input'][] = $globalBadgePosition;
+            $helper->fields_value['gcrintegrator_globalBadgePosition'] = Configuration::get('gcrintegrator_globalBadgePosition');
+        }
+
         return $helper->generateForm(array($fields_form));
     }
 
@@ -218,13 +264,37 @@ class GCRintegrator extends Module
             Configuration::updateValue('gcrintegrator_GtinDataSource', Tools::getValue('gcrintegrator_GtinDataSource'));
         }
 
+        $isBadgeVisibleGlobally_old = Configuration::get('gcrintegrator_badgeVisibleGlobally');
+        $isBadgeVisibleGlobally = Tools::getValue('gcrintegrator_badgeVisibleGlobally');
+        Configuration::updateValue('gcrintegrator_badgeVisibleGlobally', $isBadgeVisibleGlobally);
+
+        if ($isBadgeVisibleGlobally_old == 'on' && $isBadgeVisibleGlobally == 'on') {
+            Configuration::updateValue('gcrintegrator_globalBadgePosition', Tools::getValue('gcrintegrator_globalBadgePosition'));
+        }
+
         return 0;
     }
 
-    public function hookDisplayGCRbage($params)
+    public function hookDisplayBeforeBodyClosingTag($params)
+    {
+        $smartyArgs = array (
+            'BadgeVisibleGlobally' => false,
+        );
+
+        if (Configuration::get('gcrintegrator_badgeVisibleGlobally') == 'on') {
+            $smartyArgs['BadgeVisibleGlobally'] = true;
+            $smartyArgs['MERCHANT_ID'] = Configuration::get('gcrintegrator_merchant_id');
+            $smartyArgs['POSITION'] = Configuration::get('gcrintegrator_globalBadgePosition');
+        }
+        
+        $this->context->smarty->assign($smartyArgs);
+        return $this->context->smarty->fetch($this->local_path.'views/templates/hook/before-body-closing-tag.tpl');
+    }
+
+    public function hookDisplayGCRbadge($params)
     {
         $this->context->smarty->assign('MERCHANT_ID', Configuration::get('gcrintegrator_merchant_id'));
-        return $this->context->smarty->fetch($this->local_path.'views/templates/hook/GCRbage.tpl');
+        return $this->context->smarty->fetch($this->local_path.'views/templates/hook/GCRbadge.tpl');
     }
 
     public function hookDisplayOrderConfirmation($params)
