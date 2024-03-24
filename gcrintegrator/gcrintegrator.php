@@ -277,24 +277,32 @@ class GCRintegrator extends Module
 
     public function hookDisplayBeforeBodyClosingTag($params)
     {
-        $smartyArgs = array (
-            'BadgeVisibleGlobally' => false,
-        );
-
-        if (Configuration::get('gcrintegrator_badgeVisibleGlobally') == 'on') {
-            $smartyArgs['BadgeVisibleGlobally'] = true;
-            $smartyArgs['MERCHANT_ID'] = Configuration::get('gcrintegrator_merchant_id');
-            $smartyArgs['POSITION'] = Configuration::get('gcrintegrator_globalBadgePosition');
+        $templateFile = 'module:'.$this->name. '/views/templates/hook/before-body-closing-tag.tpl';
+        $cacheId = $this->getCacheId();
+        if (!$this->isCached($templateFile, $cacheId)) {
+            $smartyArgs = array (
+                'BadgeVisibleGlobally' => false,
+            );
+    
+            if (Configuration::get('gcrintegrator_badgeVisibleGlobally') == 'on') {
+                $smartyArgs['BadgeVisibleGlobally'] = true;
+                $smartyArgs['MERCHANT_ID'] = Configuration::get('gcrintegrator_merchant_id');
+                $smartyArgs['POSITION'] = Configuration::get('gcrintegrator_globalBadgePosition');
+            }
+            
+            $this->context->smarty->assign($smartyArgs);
         }
-        
-        $this->context->smarty->assign($smartyArgs);
-        return $this->context->smarty->fetch($this->local_path.'views/templates/hook/before-body-closing-tag.tpl');
+        return $this->context->smarty->fetch($templateFile, $cacheId);
     }
 
     public function hookDisplayGCRbadge($params)
     {
-        $this->context->smarty->assign('MERCHANT_ID', Configuration::get('gcrintegrator_merchant_id'));
-        return $this->context->smarty->fetch($this->local_path.'views/templates/hook/GCRbadge.tpl');
+        $templateFile = 'module:'.$this->name. '/views/templates/hook/GCRbadge.tpl';
+        $cacheId = $this->getCacheId();
+        if (!$this->isCached($templateFile, $cacheId)) {
+            $this->context->smarty->assign('MERCHANT_ID', Configuration::get('gcrintegrator_merchant_id'));
+        }
+        return $this->context->smarty->fetch($templateFile, $cacheId);
     }
 
     public function hookDisplayOrderConfirmation($params)
