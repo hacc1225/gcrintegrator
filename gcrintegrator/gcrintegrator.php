@@ -9,7 +9,7 @@ class GCRintegrator extends Module
     {
         $this->name = 'gcrintegrator';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.0';
+        $this->version = '1.1.0';
         $this->author = 'Hacc';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
@@ -33,7 +33,7 @@ class GCRintegrator extends Module
         Configuration::updateValue('gcrintegrator_EstimatedDeliveryDays', 0) &&
         Configuration::updateValue('gcrintegrator_OPT_IN_STYLE', 'CENTER_DIALOG') &&
         Configuration::updateValue('gcrintegrator_badgeVisibleGlobally', '') &&
-        Configuration::updateValue('gcrintegrator_globalBadgePosition', 'BOTTOM_RIGHT') &&
+        Configuration::updateValue('gcrintegrator_globalBadgePosition', 'RIGHT_BOTTOM') &&
         Configuration::updateValue('gcrintegrator_GtinProvided', '') &&
         Configuration::updateValue('gcrintegrator_GtinDataSource', 0);
     }
@@ -219,12 +219,12 @@ class GCRintegrator extends Module
         if ($isBadgeVisibleGlobally == 'on') {
             $globalBadgePositionOption = array(
                 array(
-                    'id_option' => 'BOTTOM_RIGHT',
-                    'name' => 'Bottom Right'
+                    'id_option' => 'RIGHT_BOTTOM',
+                    'name' => 'Right Bottom'
                 ),
                 array(
-                    'id_option' => 'BOTTOM_LEFT',
-                    'name' => 'Bottom Left'
+                    'id_option' => 'LEFT_BOTTOM',
+                    'name' => 'Left Bottom'
                 ),
             );
             $globalBadgePosition = array(
