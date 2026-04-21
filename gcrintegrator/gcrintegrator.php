@@ -245,10 +245,10 @@ class GCRintegrator extends Module
     {
         $controller = $this->context->controller;
         if ($controller instanceof Controller && $controller->php_self === 'order-confirmation') {
-            return '<script id="merchantWidgetScript" src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>'
-                   .'<script src="https://apis.google.com/js/platform.js?onload=renderOptIn" async defer></script>';
+            return '<script id="merchantWidgetScript" data-cfasync="false" src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>'
+                   .'<script data-cfasync="false" src="https://apis.google.com/js/platform.js?onload=renderOptIn" async defer></script>';
         }
-        return '<script id="merchantWidgetScript" src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>'
+        return '<script id="merchantWidgetScript" data-cfasync="false" src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>'
                .'<link rel="preload" href="https://apis.google.com/js/platform.js?onload=renderOptIn" as="script">';
     }
 

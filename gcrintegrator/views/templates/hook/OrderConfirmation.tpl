@@ -1,5 +1,5 @@
 <!-- BEGIN GCR Opt-in Module Code -->
-<script>
+<script data-cfasync="false">
 window.renderOptIn = function() {
 	window.gapi.load('surveyoptin', function() {
 		window.gapi.surveyoptin.render(
